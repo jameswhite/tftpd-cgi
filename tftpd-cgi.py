@@ -7,8 +7,8 @@ import os, time
 
 hostname = ''
 port = 69
-basedir = os.getcwd()
-cgidir = 'cgi'
+basedir = '/opt/local/tftpboot'
+cgidir = ''
 
 # end config
 
