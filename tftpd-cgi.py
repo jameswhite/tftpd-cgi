@@ -139,7 +139,7 @@ class Request:
 		data = False
 		if os.path.exists(path):
 			print 'self.filename', self.filename
-			if self.filename.startswith(basecgi + os.sep):
+			if self.path.startswith(basecgi + os.sep):
 				print 'running', path
 				os.environ['REMOTE_HOST'] = self.ip
 				os.environ['REMOTE_PORT'] = str(self.port)
