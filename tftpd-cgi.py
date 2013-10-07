@@ -138,6 +138,7 @@ class Request:
 		path = os.path.join(basedir, self.filename)
 		data = False
 		if os.path.exists(path):
+			print 'self.filename', self.filename
 			if self.filename.startswith(basecgi + os.sep):
 				print 'running', path
 				os.environ['REMOTE_HOST'] = self.ip
