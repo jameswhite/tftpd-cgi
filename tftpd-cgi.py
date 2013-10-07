@@ -139,6 +139,7 @@ class Request:
 		data = False
 		if os.path.exists(path):
 			print 'path', path
+			print '(', basecgi, '+', os.sep, ')'
                         print 'path.startswith', path.startswith(basecgi + os.sep)
 			if path.startswith(basecgi + os.sep):
 				print 'running', path
