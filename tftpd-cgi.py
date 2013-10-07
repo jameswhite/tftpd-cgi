@@ -144,7 +144,8 @@ class Request:
 				os.environ['REMOTE_PORT'] = str(self.port)
 				data = os.popen(path).read()
 			else:
-				print 'basecgi:', basecgi
+				print 'basecgi', basecgi
+				print 'os.sep', os.sep
 				print 'reading', path
 				f = open(path, 'rb')
 				data = f.read()
