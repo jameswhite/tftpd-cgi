@@ -141,7 +141,7 @@ class Request:
 			print 'path', path
 			print '(', basecgi, '+', os.sep, ')'
                         print 'path.startswith', path.startswith(basecgi)
-			if path.startswith(basecgi + os.sep):
+			if path.startswith(basecgi):
 				print 'running', path
 				os.environ['REMOTE_HOST'] = self.ip
 				os.environ['REMOTE_PORT'] = str(self.port)
