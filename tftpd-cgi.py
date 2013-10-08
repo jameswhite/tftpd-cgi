@@ -142,7 +142,7 @@ class Request:
                         st = os.stat(path)
                         print 'st.mode', st.st_mode
                       
-                        if stat.S_IFMT(st.st_mode) is stat_IFREG:
+                        if stat.S_IFMT(st.st_mode) is stat.S_IFREG:
                                 print "Regular File"
 			print 'path', path
 			print '(', basecgi, '+', os.sep, ')'
