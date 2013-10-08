@@ -135,12 +135,12 @@ class Request:
 			self.finished = True
 
 	def read(self):
-                # strip out "get ../../../etc/passwd" like commands
+                # use abspath to strip out "get ../../../etc/passwd" like commands
 		path = os.path.abspath(os.path.join(basedir, self.filename))
 		data = False
 		if os.path.exists(path):
-                        # st = os.stat(path)
-                        # print 'st', st
+                        st = os.stat(path)
+                        print 'st.mode', st.mode
 			print 'path', path
 			print '(', basecgi, '+', os.sep, ')'
                         print 'path.startswith', path.startswith(basecgi)
