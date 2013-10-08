@@ -136,10 +136,10 @@ class Request:
 
 	def read(self):
                 # get just the base filename
-                scrubbed_file = os.basename(filename)
+                scrubbed_file = os.path.basename(filename)
                 # cd to the dirname of path and execute getcwd to strip out any "../../../" in the path
                 oldpwd = os.getcwd()
-		file_dir = os.dirname( os.path.join(basedir, self.filename) )
+		file_dir = os.path.dirname( os.path.join(basedir, self.filename) )
                 os.chdir(file_dir)
                 scrubbed_file_dr = os.getcwd()
                 # reassemble the path from the scrubbed components
@@ -148,7 +148,7 @@ class Request:
                 os.chdir(oldpwd)
 		data = False
 		if os.path.exists(path):
-                        st = os.stat(path)
+                        # st = os.stat(path)
                         print 'st', st
 			print 'path', path
 			print '(', basecgi, '+', os.sep, ')'
