@@ -153,14 +153,14 @@ class Request:
 				        	f = open(path, 'rb')
 				        	data = f.read()
 				        	f.close()
-	        	else:	
-                                print path, "startswith", basecgi,'pxelinux.cfg', os.sep
-	        		if path.startswith(basecgi,'pxelinux.cfg', os.sep):
-				path = basecgi,'pxelinux.cfg',os.sep,'default'
-				print 'reading', path
-		        	f = open(path, 'rb')
-		        	data = f.read()
-		        	f.close()
+#	        	else:	
+#                                print path, "startswith", basecgi,'pxelinux.cfg', os.sep
+#	        		if path.startswith(basecgi,'pxelinux.cfg', os.sep):
+#					path = basecgi,'pxelinux.cfg',os.sep,'default'
+#					print 'reading', path
+#		        		f = open(path, 'rb')
+#		        		data = f.read()
+#		        		f.close()
 		if data is False:
 			print 'could not read', path
 			packet = opcode.pack(Op.ERROR) + rhshort.pack(3) + 'could not read '+self.filename+'\0'
