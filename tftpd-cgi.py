@@ -140,7 +140,7 @@ class Request:
 		data = False
 		if os.path.exists(path):
                         st = os.stat(path)
-                        print 'st.mode', st.mode
+                        print 'st.mode', st.st_mode
 			print 'path', path
 			print '(', basecgi, '+', os.sep, ')'
                         print 'path.startswith', path.startswith(basecgi)
