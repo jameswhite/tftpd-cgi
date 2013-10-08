@@ -142,7 +142,7 @@ class Request:
                         st = os.stat(path)
                         if stat.S_IFMT(st.st_mode) == stat.S_IFREG:
                                 print "modes",(st.st_mode & stat.S_IXUSR),(st.st_mode & stat.S_IXGRP),(st.st_mode & stat.S_IXOTH)
-                                if (st.st_mode & stat.S_IXUSR) && (st.st_mode & stat.S_IXGRP) && (st.st_mode & stat.S_IXOTH):
+                                if (st.st_mode & stat.S_IXUSR) | (st.st_mode & stat.S_IXGRP) | (st.st_mode & stat.S_IXOTH):
 			                print 'path', path
 			                print '(', basecgi, '+', os.sep, ')'
                                         print 'path.startswith', path.startswith(basecgi)
