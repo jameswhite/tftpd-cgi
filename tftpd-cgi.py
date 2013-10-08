@@ -140,26 +140,23 @@ class Request:
 		data = False
 		if os.path.exists(path):
                         st = os.stat(path)
-                        print 'st.mode', st.st_mode
-                      
-                        print stat.S_IFMT(st.st_mode), '==', stat.S_IFREG
                         if stat.S_IFMT(st.st_mode) == stat.S_IFREG:
                                 print "Regular File"
-			print 'path', path
-			print '(', basecgi, '+', os.sep, ')'
-                        print 'path.startswith', path.startswith(basecgi)
-			if path.startswith(basecgi):
-				print 'running', path
-				os.environ['REMOTE_HOST'] = self.ip
-				os.environ['REMOTE_PORT'] = str(self.port)
-				data = os.popen(path).read()
-			else:
-				print 'basecgi', basecgi
-				print 'os.sep', os.sep
-				print 'reading', path
-				f = open(path, 'rb')
-				data = f.read()
-				f.close()
+			        print 'path', path
+			        print '(', basecgi, '+', os.sep, ')'
+                                print 'path.startswith', path.startswith(basecgi)
+			        if path.startswith(basecgi):
+				        print 'running', path
+				        os.environ['REMOTE_HOST'] = self.ip
+				        os.environ['REMOTE_PORT'] = str(self.port)
+				        data = os.popen(path).read()
+			        else:
+				        print 'basecgi', basecgi
+				        print 'os.sep', os.sep
+				        print 'reading', path
+				        f = open(path, 'rb')
+				        data = f.read()
+				        f.close()
 		
 		if data is False:
 			print 'could not read', path
