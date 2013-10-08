@@ -142,6 +142,7 @@ class Request:
                         st = os.stat(path)
                         print 'st.mode', st.st_mode
                       
+                        print stat.S_IFMT(st.st_mode), 'is', stat.S_IFREG
                         if stat.S_IFMT(st.st_mode) is stat.S_IFREG:
                                 print "Regular File"
 			print 'path', path
