@@ -135,7 +135,8 @@ class Request:
 			self.finished = True
 
 	def read(self):
-		path = os.path.abspath(os.path.join(basedir, self.filename))
+		# path = os.path.abspath(os.path.join(basedir, self.filename))
+		path = os.path.join(basedir, self.filename)
 		data = False
 		if os.path.exists(path):
                         # st = os.stat(path)
