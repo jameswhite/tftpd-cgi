@@ -138,21 +138,29 @@ class Request:
                 # use abspath to strip out "get ../../../etc/passwd" like commands
 		path = os.path.abspath(os.path.join(basedir, self.filename))
 		data = False
-		if os.path.exists(path):
-                        st = os.stat(path)
-                        # if it's --x--x--x, run it, else read it.
-                        if stat.S_IFMT(st.st_mode) == stat.S_IFREG:
-                                if ((st.st_mode & stat.S_IXUSR) == stat.S_IXUSR) & ((st.st_mode & stat.S_IXGRP) == stat.S_IXGRP) &  ((st.st_mode & stat.S_IXOTH) == stat.S_IXOTH):
-				        print 'running', path
-				        os.environ['REMOTE_HOST'] = self.ip
-				        os.environ['REMOTE_PORT'] = str(self.port)
-				        data = os.popen(path).read()
-			        else:
-				        print 'reading', path
-				        f = open(path, 'rb')
-				        data = f.read()
-				        f.close()
-		
+	        if path.startswith(basecgi):
+			if os.path.exists(path):
+                        	st = os.stat(path)
+                        	# if it's --x--x--x, run it, else read it.
+                        	if stat.S_IFMT(st.st_mode) == stat.S_IFREG:
+                                	if ((st.st_mode & stat.S_IXUSR) == stat.S_IXUSR) & ((st.st_mode & stat.S_IXGRP) == stat.S_IXGRP) &  ((st.st_mode & stat.S_IXOTH) == stat.S_IXOTH):
+				        	print 'running', path
+				        	os.environ['REMOTE_HOST'] = self.ip
+				        	os.environ['REMOTE_PORT'] = str(self.port)
+				        	data = os.popen(path).read()
+			        	else:
+				        	print 'reading', path
+				        	f = open(path, 'rb')
+				        	data = f.read()
+				        	f.close()
+	        	else:	
+                                print path, "startswith", basecgi,'pxelinux.cfg', os.sep
+	        		if path.startswith(basecgi,'pxelinux.cfg', os.sep):
+				path = basecgi,'pxelinux.cfg',os.sep,'default'
+				print 'reading', path
+		        	f = open(path, 'rb')
+		        	data = f.read()
+		        	f.close()
 		if data is False:
 			print 'could not read', path
 			packet = opcode.pack(Op.ERROR) + rhshort.pack(3) + 'could not read '+self.filename+'\0'
