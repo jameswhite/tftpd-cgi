@@ -140,19 +140,14 @@ class Request:
 		data = False
 		if os.path.exists(path):
                         st = os.stat(path)
+                        # if it's --x--x--x, run it, else read it.
                         if stat.S_IFMT(st.st_mode) == stat.S_IFREG:
-                                print "modes",(st.st_mode & stat.S_IXUSR),(st.st_mode & stat.S_IXGRP),(st.st_mode & stat.S_IXOTH)
                                 if ((st.st_mode & stat.S_IXUSR) == stat.S_IXUSR) & ((st.st_mode & stat.S_IXGRP) == stat.S_IXGRP) &  ((st.st_mode & stat.S_IXOTH) == stat.S_IXOTH):
-			                print 'path', path
-			                print '(', basecgi, '+', os.sep, ')'
-                                        print 'path.startswith', path.startswith(basecgi)
 				        print 'running', path
 				        os.environ['REMOTE_HOST'] = self.ip
 				        os.environ['REMOTE_PORT'] = str(self.port)
 				        data = os.popen(path).read()
 			        else:
-				        print 'basecgi', basecgi
-				        print 'os.sep', os.sep
 				        print 'reading', path
 				        f = open(path, 'rb')
 				        data = f.read()
