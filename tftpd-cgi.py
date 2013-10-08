@@ -141,14 +141,10 @@ class Request:
 		if os.path.exists(path):
                         st = os.stat(path)
                         if stat.S_IFMT(st.st_mode) == stat.S_IFREG:
-                                print "Regular File"
-                                print "user",  st.st_mode & stat.S_IXUSR
-                                print "group", st.st_mode & stat.S_IXGRP
-                                print "others", st.st_mode & stat.S_IXOTH
-			        print 'path', path
-			        print '(', basecgi, '+', os.sep, ')'
-                                print 'path.startswith', path.startswith(basecgi)
-			        if path.startswith(basecgi):
+                                if (st.st_mode & stat.S_IXUSR)&(st.st_mode & stat.S_IXGRP)&(st.st_mode & stat.S_IXOTH)
+			                print 'path', path
+			                print '(', basecgi, '+', os.sep, ')'
+                                        print 'path.startswith', path.startswith(basecgi)
 				        print 'running', path
 				        os.environ['REMOTE_HOST'] = self.ip
 				        os.environ['REMOTE_PORT'] = str(self.port)
