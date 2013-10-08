@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import socket, select, struct
-import os, time
+import os, time, stat
 
 # config
 
@@ -138,6 +138,8 @@ class Request:
 		path = os.path.join(basedir, self.filename)
 		data = False
 		if os.path.exists(path):
+                        st = os.stat(path)
+                        print 'st', st
 			print 'path', path
 			print '(', basecgi, '+', os.sep, ')'
                         print 'path.startswith', path.startswith(basecgi)
