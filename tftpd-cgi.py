@@ -143,7 +143,7 @@ class Request:
                         if stat.S_IFMT(st.st_mode) == stat.S_IFREG:
                                 print "Regular File"
                                 print "user",  st.st_mode & stat.S_IXUSR
-                                print "group", st.st_mode & stat.S_IRGRP
+                                print "group", st.st_mode & stat.S_IXGRP
                                 print "others", st.st_mode & stat.S_IXOTH
 			        print 'path', path
 			        print '(', basecgi, '+', os.sep, ')'
