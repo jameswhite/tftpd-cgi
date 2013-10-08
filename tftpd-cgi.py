@@ -141,7 +141,7 @@ class Request:
 		if os.path.exists(path):
                         st = os.stat(path)
                         print 'st.mode', st.st_mode
-                        print 'stat.S_IFREG', st.mode  &  stat.S_IFREG
+                        print 'stat.S_IFREG', st.st_mode  &  stat.S_IFREG
 			print 'path', path
 			print '(', basecgi, '+', os.sep, ')'
                         print 'path.startswith', path.startswith(basecgi)
