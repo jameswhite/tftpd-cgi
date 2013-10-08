@@ -142,7 +142,9 @@ class Request:
                         st = os.stat(path)
                         if stat.S_IFMT(st.st_mode) == stat.S_IFREG:
                                 print "Regular File"
-                                print "executable",(st.st_mode)&(stat.S_IXUSR|stat.S_IRGRP|stat.S_IXOTH)
+                                print "user",  st.st_mode & stat.S_IXUSR
+                                print "group", st.st_mode & stat.S_IRGRP
+                                print "others", st.st_mode & stat.S_IXOTH
 			        print 'path', path
 			        print '(', basecgi, '+', os.sep, ')'
                                 print 'path.startswith', path.startswith(basecgi)
