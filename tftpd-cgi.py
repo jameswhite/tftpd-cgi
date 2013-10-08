@@ -141,7 +141,9 @@ class Request:
 		if os.path.exists(path):
                         st = os.stat(path)
                         print 'st.mode', st.st_mode
-                        print 'stat.S_IFREG', stat.S_IFREG(st.st_mode)
+                      
+                        if stat.S_IFMT(st.st_mode) is stat_IFREG:
+                                print "Regular File"
 			print 'path', path
 			print '(', basecgi, '+', os.sep, ')'
                         print 'path.startswith', path.startswith(basecgi)
