@@ -1,0 +1,218 @@
+#!/usr/bin/env perl
+package Net::LDAP::TFTPBoot;
+use strict; 
+use FileHandle;
+use Net::LDAP;
+use Cwd;
+
+sub new{
+    my $class = shift;
+    my $cnstr = shift if(@_);
+    my $self = {};
+    foreach my $key (keys(%{ $cnstr })){
+        $self->{'cfg'}->{ $key } = $cnstr->{$key};
+    }
+    bless ($self, $class);
+    print STDERR "No LDAP configuration file found.\n" unless $self->ldaprc();
+    return $self;
+}
+
+sub ldaprc{
+    my $self = shift;
+    my $cwd = cwd();
+    my $home=$ENV{'HOME'};
+    my $found = 0;
+    foreach my $file ("$cwd/ldaprc", "$home/ldaprc", "$home/.ldaprc", "/etc/ldap.conf", "/etc/openldap/ldap.conf"){
+        if(-f "$file"){
+            $found = 1;
+            my $fh = FileHandle->new;
+            if($fh->open("< $file")){
+                while(my $line=<$fh>){
+                    $line=~s/#.*//g;
+                    $line=~s/^\s+//g;
+                    $line=~s/\s+$//g;
+                    next if($line=~m/^$/);
+                    if($line=~m/(\S+)\s+(\S+)/){
+                        my ($key,$value) = ($1,$2);
+                        $key=~tr/A-Z/a-z/;
+                        $self->{'cfg'}->{$key} = $value;
+                    }
+                }
+                $fh->close;
+            }
+            last;
+        }
+    }
+    return undef unless $found;
+    return 1;
+}
+
+sub connection{
+    my $self = shift;
+    if(!defined($self->{'cfg'}->{'uri'})){
+        print STDERR "No URI defined. I don't know to what to connect.\n";
+        $self->{'ldap'} = undef;
+        return $self;
+    }
+    $self->{'ldap'} = Net::LDAP->new( $self->{'cfg'}->{'uri'} ) or warn "$@";
+    my $mesg = undef;
+    if(defined($self->{'cfg'}->{'binddn'}) && defined($self->{'cfg'}->{'bindpw'})){
+        $mesg = $self->{'ldap'}->bind( $self->{'cfg'}->{'binddn'}, password => ,$self->{'cfg'}->{'bindpw'} );
+    }else{
+        $mesg = $self->{'ldap'}->bind();
+    }
+    #print STDERR "connection: ".$mesg->error."\n" if $mesg->code;
+    return $self;
+}
+
+sub search{
+    my $self = shift;
+    my $filter = shift;
+    my $base = shift if(@_);
+    if(!defined($self->{'cfg'}->{'base'})){
+        print STDERR "No basedn defined. Results will vary.\n";
+    }
+    my $search_base = $base.",".$self->{'cfg'}->{'base'} if(defined($base));
+    my $mesg;
+    $self->connection() unless $self->{'ldap'};
+    $mesg = $self->{'ldap'}->search(base => $search_base, filter => $filter);
+    print STDERR "search $filter:". $mesg->error."\n" if($mesg->code);
+    my $entries = [ $mesg->entries() ];
+    return $entries;
+}
+
+sub get_dn_entry{
+    my $self = shift;
+    my $dn = shift if(@_);
+    return undef unless $dn;
+    my $mesg;
+    my @dn = split(/,/,$dn);
+    my $filter = shift(@dn);
+    my $base = join(",",@dn);
+    $self->connection() unless $self->{'ldap'};
+    $mesg = $self->{'ldap'}->search('base' => $base, 'filter' => $filter, 'scope' => 'one');
+    print STDERR "seearch $filter: ". $mesg->error."\n" if($mesg->code && $self->{'debug'});
+    foreach my $entry ($mesg->entries) { return $entry; } # there should be only one
+    return undef;
+}
+
+sub sets_for{
+    my $self = shift;
+    my $dn = shift if(@_);
+    return undef unless $dn;
+    my $mesg;
+    my $filter = "uniqueMember=$dn";
+    my $base = $self->{'cfg'}->{'sets_ou'}.",".$self->{'cfg'}->{'base'};
+    $base =~s/, */,/g;
+    $self->connection() unless $self->{'ldap'};
+    $mesg = $self->{'ldap'}->search('base' => $base, 'filter' => $filter, 'scope' => 'sub');
+    print STDERR "eearch $filter: ". $mesg->error."\n" if($mesg->code && $self->{'debug'});
+    my $allsets = undef ;
+    foreach my $entry ($mesg->entries) {
+        my $set = $entry->dn();
+        $set =~s/, */,/g;
+        $set=~s/,$base$//i;
+        my @sets_tree=split(/,/,$set);
+        my @newset;
+        foreach my $subset (reverse(@sets_tree)){
+            $subset=~s/^[^=]+=//;
+            push(@newset,$subset);
+        }
+        push(@{$allsets},join("::",@newset));
+    }
+    return $allsets if( $allsets);
+    return undef;
+}
+
+1;
+
+use Template;
+use Data::Dumper;
+my $debug = 0;
+my @trace_hosts = @ARGV;
+print "Tracing ".join(", ",@trace_hosts)."\n" if($#trace_hosts>=0);
+my $cfg = {
+            'debug'    => $debug,
+            'domain'   => 'eftdomain.net',
+            'tftpboot' => '/opt/local/tftpboot',
+            'sets_ou'  => 'ou=Sets',
+          };
+
+my $remote_host = $ENV{REMOTE_HOST};
+my $ldap = Net::LDAP::TFTPBoot->new($cfg);
+my $entries = $ldap->search("(dhcpStatements=fixed-address $ENV{'REMOTE_HOST'})","cn=DHCP");
+
+# There can be only one.
+if($#{ $entries } < 0){ 
+    print "No entries with => dhcpStatements=fixed-address $ENV{'REMOTE_HOST'}. That's not good.\n";
+    die "No entries with => dhcpStatements=fixed-address $ENV{'REMOTE_HOST'}. That's not good.\n";
+}
+
+if($#{ $entries } > 0){ 
+    print "Multiple entries with => dhcpStatements=fixed-address $ENV{'REMOTE_HOST'}. That's not good.\n";
+    die "Multiple entries with => dhcpStatements=fixed-address $ENV{'REMOTE_HOST'}. That's not good.\n";
+}
+
+foreach my $entry (@{ $entries }){
+    my @parts = split(/,/,$entry->dn);
+    my ($attr,$fqdn) = split(/=/,$parts[0]);
+    my @fqdn_parts=split(/\./,$fqdn);
+    my $hostname = shift(@fqdn_parts);
+    my $domain = join('.',@fqdn_parts);
+    my @dn_parts = split(/\./,$fqdn);
+    my $dn = "cn=".shift(@dn_parts);
+    $dn .= ',ou=Hosts,dc='.join(',dc=',@dn_parts);
+    my $dhcpStatements = $entry->get_value('dhcpStatements',asref => 1);
+    my $next_server='0.0.0.0';
+    my $filename='pxelinux.0';
+
+    foreach my $dhcpStatement (@{ $dhcpStatements }){
+        if( $dhcpStatement=~m/next-server\s+(.*)/){
+            $next_server=$1;
+        }
+        if( $dhcpStatement=~m/filename\s+(.*)/){
+            $filename=$1;
+        }
+    }
+    
+    my $sets = $ldap->sets_for($dn);
+    my @oses;
+
+    foreach my $set (@{ $sets }){
+        if($set =~m/Operating Systems::(.*)/){
+            push(@oses,$1); 
+        }
+    }
+    if($#oses < 0){ 
+        print "$dn is not in an Operating System Set . That's not good.\n";
+        die "$dn is not in an Operating System Set . That's not good.\n";
+    }
+    
+    if($#oses > 0){ 
+        print "$dn is in ". $#oses ." Operating System Sets . That's not good.\n";
+        die "$dn is in ". $#oses ." Operating System Sets . That's not good.\n";
+    }
+    my $output ='';
+    my $template = Template->new({'INCLUDE_PATH' => $cfg->{'tftpboot'}."/pxelinux.menus/templates"});
+    # this will vary
+    my $tpl_file='main_menu';
+    if($filename eq qq("pxelinux.install")){
+        $tpl_file = "install_".$oses[0].".tpl"; $tpl_file=~tr/A-Z/a-z/; $tpl_file=~s/\s/_/g;  # ( e.g. Fedora 15 -> pxelinux.menus/templates/fedora_15.tpl )
+    }
+    my $vars = {
+                 'hostname'    => $hostname,
+                 'fqdn'        => $fqdn,
+                 'domainname'  => $domain,
+                 'next_server' => $next_server,
+                 'ip'          => $ENV{'REMOTE_HOST'},
+               };
+    $template->process($tpl_file, $vars, \$output);
+    print $output."\n";
+}
+# cn=DHCP lookup
+#  dhcpStatements: fixed-address 192.168.7.252
+# ou=Sets lookup
+#    ou=Operating Systems,ou=Sets,dc=eftdomain,dc=net 
+#    uniqueMember: cn=hinault,ou=Hosts,dc=eftdomain,dc=net
+# ou=Hosts lookup (is this necessary?)
+# write template (<cn=Set>=~s/ /_/g) to STDOUT
